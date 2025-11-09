@@ -14,16 +14,16 @@ RUN mvn clean package -DskipTests
 FROM openjdk:11-jdk-slim
 WORKDIR /app
 
-# Copy dependencies from build stage
-COPY --from=build /app/target/dependency ./dependency
-# Copy compiled classes
-COPY --from=build /app/target/classes ./classes
-# Copy webapp directory to the correct location
-COPY --from=build /app/src/main/webapp ./src/main/webapp
+## For simplicity produce a fat JAR (built by maven-shade) and run it.
+## Build stage already ran `mvn clean package -DskipTests` which will produce
+## target/*-shaded.jar (maven-shade default) or a jar in target.
 
-# Expose port (Render will set PORT env var)
+# Copy the produced JAR from the build stage
+COPY --from=build /app/target/*.jar /app/app.jar
+
+# Expose port (Render provides PORT env var at runtime)
 EXPOSE 8080
 
-# Run the application
-CMD ["java", "-cp", "classes:dependency/*", "com.shoppingcart.Application"]
+# Run the fat JAR
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
