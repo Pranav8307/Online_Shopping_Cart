@@ -20,9 +20,12 @@ RUN mvn clean package -DskipTests && \
 FROM eclipse-temurin:11-jre
 WORKDIR /app
 
-# Copy the renamed JAR and webapp directory
+# Copy the renamed JAR and webapp directory with proper permissions
 COPY --from=build /app/target/app.jar /app/app.jar
 COPY --from=build /app/src/main/webapp /app/webapp
+RUN ls -la /app/webapp && \
+    echo "Checking WEB-INF..." && \
+    ls -la /app/webapp/WEB-INF || echo "WEB-INF not found!"
 
 # Expose port (Render provides PORT env var at runtime)
 EXPOSE 8080

@@ -4,10 +4,12 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.StandardRoot;
 
 import java.io.File;
+import java.net.URI;
 
 public class Application {
     private static final int DEFAULT_PORT = 8080;
@@ -43,13 +45,38 @@ public class Application {
                 }
             }
             
-            // Set up the web app with proper configuration
-            // Use empty string for root context
-            Context context = tomcat.addWebapp("", webappDir.getAbsolutePath());
+            System.out.println("Using webapp directory: " + webappDir.getAbsolutePath());
             
-            // Enable JSP support and set reloadable
+            // Create the context with proper path
+            Context context = tomcat.addWebapp(CONTEXT_PATH, webappDir.getAbsolutePath());
+            
+            // Configure the context
             context.setAddWebinfClassesResources(true);
-            context.setReloadable(true); // Enable reloading for development
+            context.setReloadable(false); // Disable reloading in production
+            
+            // Set up resources root
+            StandardRoot resourceRoot = new StandardRoot(context);
+            context.setResources(resourceRoot);
+            
+            // Add classes directory if it exists (development mode)
+            File classesDir = new File("target/classes");
+            if (classesDir.exists()) {
+                resourceRoot.addPreResources(
+                    new DirResourceSet(resourceRoot, "/WEB-INF/classes",
+                        classesDir.getAbsolutePath(), "/"));
+                System.out.println("Added classes from: " + classesDir.getAbsolutePath());
+            }
+            
+            System.out.println("Context path: " + context.getPath());
+            System.out.println("Document base: " + context.getDocBase());
+            
+            // Verify critical JSP files exist
+            File registerJsp = new File(webappDir, "register.jsp");
+            if (!registerJsp.exists()) {
+                System.err.println("WARNING: register.jsp not found at: " + registerJsp.getAbsolutePath());
+            } else {
+                System.out.println("Found register.jsp at: " + registerJsp.getAbsolutePath());
+            }
             
             // Configure session timeout programmatically (since web.xml session-config causes issues)
             context.setSessionTimeout(30);
