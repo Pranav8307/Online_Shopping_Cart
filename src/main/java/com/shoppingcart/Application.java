@@ -4,22 +4,19 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.catalina.WebResourceRoot;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.StandardRoot;
 
 import java.io.File;
-import java.net.URI;
 
 public class Application {
     private static final int DEFAULT_PORT = 8080;
-    private static final String CONTEXT_PATH = "/";
+    private static final String CONTEXT_PATH = "";
     
     public static void main(String[] args) {
         Tomcat tomcat = null;
         try {
             // Read PORT from environment variable (required by Render)
-            // If not set, use default port 8080 for local development
             String portEnv = System.getenv("PORT");
             int port = (portEnv != null && !portEnv.isEmpty()) 
                 ? Integer.parseInt(portEnv) 
@@ -34,7 +31,7 @@ public class Application {
             String baseDir = new File("target/tomcat").getAbsolutePath();
             tomcat.setBaseDir(baseDir);
             
-            // Get webapp directory - check Docker path first, then dev path
+            // Get webapp directory
             File webappDir = new File("/app/webapp").getAbsoluteFile();
             if (!webappDir.exists()) {
                 // Fallback to dev path
@@ -47,53 +44,34 @@ public class Application {
             
             System.out.println("Using webapp directory: " + webappDir.getAbsolutePath());
             
-            // Create the context with proper path
+            // Set up the web app context
             Context context = tomcat.addWebapp(CONTEXT_PATH, webappDir.getAbsolutePath());
-            
-            // Configure the context
             context.setAddWebinfClassesResources(true);
             context.setReloadable(false); // Disable reloading in production
             
-            // Set up resources root
-            StandardRoot resourceRoot = new StandardRoot(context);
-            context.setResources(resourceRoot);
+            // Configure resources
+            StandardRoot resources = new StandardRoot(context);
+            context.setResources(resources);
             
-            // Add classes directory if it exists (development mode)
+            // Add classes directory if it exists
             File classesDir = new File("target/classes");
             if (classesDir.exists()) {
-                resourceRoot.addPreResources(
-                    new DirResourceSet(resourceRoot, "/WEB-INF/classes",
+                resources.addPreResources(
+                    new DirResourceSet(resources, "/WEB-INF/classes",
                         classesDir.getAbsolutePath(), "/"));
                 System.out.println("Added classes from: " + classesDir.getAbsolutePath());
             }
-
-            // Enable JSP support
-            tomcat.getHost().addChild(context);
             
-            // Add JSP Servlet
-            Wrapper wrapper = context.createWrapper();
-            wrapper.setName("jsp");
-            wrapper.setServletClass("org.apache.jasper.servlet.JspServlet");
-            wrapper.addInitParameter("fork", "false");
-            wrapper.addInitParameter("xpoweredBy", "false");
-            wrapper.setLoadOnStartup(3);
-            context.addChild(wrapper);
+            // Configure JSP servlet
+            Tomcat.addServlet(context, "jsp", "org.apache.jasper.servlet.JspServlet");
             context.addServletMappingDecoded("*.jsp", "jsp");
             
-            // Add Default Servlet for static files
-            wrapper = context.createWrapper();
-            wrapper.setName("default");
-            wrapper.setServletClass("org.apache.catalina.servlets.DefaultServlet");
-            wrapper.setLoadOnStartup(1);
-            context.addChild(wrapper);
+            // Configure default servlet
+            Tomcat.addServlet(context, "default", "org.apache.catalina.servlets.DefaultServlet");
             context.addServletMappingDecoded("/", "default");
             
-            System.out.println("\n=== Context Configuration ===");
-            System.out.println("Context path: " + context.getPath());
-            System.out.println("Document base: " + context.getDocBase());
-            System.out.println("Webapp real path: " + context.getRealPath("/"));
-            
-            // Verify critical JSP files
+            // Verify critical files
+            System.out.println("\n=== Resource Check ===");
             String[] criticalFiles = {
                 "register.jsp",
                 "login.jsp",
@@ -101,81 +79,37 @@ public class Application {
                 "WEB-INF/web.xml"
             };
             
-            System.out.println("\n=== Critical Files Check ===");
             for (String file : criticalFiles) {
                 File f = new File(webappDir, file);
                 System.out.println(file + " exists: " + f.exists() + " at " + f.getAbsolutePath());
             }
             
-            // Configure session timeout programmatically (since web.xml session-config causes issues)
-            context.setSessionTimeout(30);
-            
-            // Note: Filter will be registered after context starts using ServletContainerInitializer
-            // For now, we'll skip programmatic filter registration to avoid classloader issues
-            
-            // Add compiled classes to classpath
-            File additionWebInfClasses = new File("target/classes");
-            if (additionWebInfClasses.exists()) {
-                StandardRoot resources = new StandardRoot(context);
-                resources.addPreResources(
-                    new DirResourceSet(resources, "/WEB-INF/classes",
-                        additionWebInfClasses.getAbsolutePath(), "/"));
-                context.setResources(resources);
-            }
-            
-            // Enable JSP support by adding Jasper to parent classloader
-            // This is needed for embedded Tomcat
-            context.setParentClassLoader(Application.class.getClassLoader());
-            
-            // Print debug info
-            System.out.println("================================================");
-            System.out.println("Configuration:");
-            System.out.println("Webapp directory: " + webappDir.getAbsolutePath());
-            System.out.println("Context path: " + context.getPath());
-            System.out.println("Web.xml exists: " + new File(webappDir, "WEB-INF/web.xml").exists());
-            System.out.println("index.jsp exists: " + new File(webappDir, "index.jsp").exists());
-            System.out.println("Classes directory: " + additionWebInfClasses.getAbsolutePath());
-            System.out.println("Classes exist: " + additionWebInfClasses.exists());
-            System.out.println("================================================");
-            
-            // Get and configure the connector BEFORE starting
-            // This is crucial - the connector must be created before start()
+            // Configure and start connector
             Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
             connector.setPort(port);
             connector.setURIEncoding("UTF-8");
             tomcat.setConnector(connector);
             
             // Start the server
-            System.out.println("Starting Tomcat server...");
+            System.out.println("\n=== Starting Server ===");
             tomcat.start();
             
-            // Note: Filter registration disabled for now due to embedded Tomcat classloader issues
-            // Authentication will be handled in individual servlets if needed
-            
-            // Verify connector is started
             if (connector.getState().isAvailable()) {
-                System.out.println("================================================");
-                System.out.println("Online Shopping Cart System is running!");
+                System.out.println("\n=== Server Started Successfully ===");
                 System.out.println("Access the application at:");
-                System.out.println("http://0.0.0.0:" + port + CONTEXT_PATH);
-                System.out.println("Port: " + port + " (from " + (portEnv != null ? "environment" : "default") + ")");
-                System.out.println("================================================");
-                System.out.println("Default Credentials:");
-                System.out.println("Admin: admin / admin123");
-                System.out.println("Customer: customer / customer123");
-                System.out.println("================================================");
-                System.out.println("Press Ctrl+C to stop the server");
-                System.out.println("================================================");
+                System.out.println("http://0.0.0.0:" + port);
+                System.out.println("\nTo verify configuration, visit:");
+                System.out.println("http://0.0.0.0:" + port + "/test.html");
+                System.out.println("\nPress Ctrl+C to stop the server");
             } else {
                 System.err.println("ERROR: Connector failed to start!");
                 System.exit(1);
             }
             
-            // Keep the server running
             tomcat.getServer().await();
             
         } catch (LifecycleException e) {
-            System.err.println("Failed to start Tomcat server: " + e.getMessage());
+            System.err.println("Failed to start Tomcat: " + e.getMessage());
             e.printStackTrace();
             if (tomcat != null) {
                 try {
@@ -199,4 +133,3 @@ public class Application {
         }
     }
 }
-
