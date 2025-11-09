@@ -24,8 +24,17 @@ WORKDIR /app
 COPY --from=build /app/target/app.jar /app/app.jar
 COPY --from=build /app/src/main/webapp /app/webapp
 
+# Copy compiled classes and dependency jars into the exploded webapp so
+# Tomcat's webapp classloader can find servlets/filters at runtime.
+COPY --from=build /app/target/classes /app/webapp/WEB-INF/classes
+COPY --from=build /app/target/dependency /tmp/dependency
+
 # Create necessary directories and verify webapp structure
 RUN mkdir -p /app/webapp/WEB-INF && \
+    mkdir -p /app/webapp/WEB-INF/lib && \
+    # move dependency jars into WEB-INF/lib
+    cp -r /tmp/dependency/* /app/webapp/WEB-INF/lib/ || true && \
+    rm -rf /tmp/dependency || true && \
     echo "=== Webapp Contents ===" && \
     ls -la /app/webapp && \
     echo "=== WEB-INF Contents ===" && \
