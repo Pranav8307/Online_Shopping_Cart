@@ -8,10 +8,10 @@ import javax.mail.internet.*;
 import java.util.Properties;
 
 public class EmailService {
-    private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final String SMTP_PORT = "587";
-    private static final String FROM_EMAIL = "your-email@gmail.com"; // Configure this
-    private static final String FROM_PASSWORD = "your-app-password"; // Configure this
+    private static final String SMTP_HOST = System.getenv("SMTP_HOST") != null ? System.getenv("SMTP_HOST") : "smtp.gmail.com";
+    private static final String SMTP_PORT = System.getenv("SMTP_PORT") != null ? System.getenv("SMTP_PORT") : "587";
+    private static final String FROM_EMAIL = System.getenv("EMAIL_FROM") != null ? System.getenv("EMAIL_FROM") : "noreply@example.com";
+    private static final String FROM_PASSWORD = System.getenv("EMAIL_PASSWORD") != null ? System.getenv("EMAIL_PASSWORD") : "";
     
     public static boolean sendOrderConfirmation(Order order) {
         User user = UserDAO.getInstance().getUserById(order.getUserId());

@@ -105,11 +105,25 @@ public class CheckoutServlet extends HttpServlet {
         OrderDAO orderDAO = OrderDAO.getInstance();
         orderDAO.createOrder(order);
         
-        // Save to XML
-        XMLOrderManager.saveOrderToXML(order);
+        // Save to XML asynchronously
+        new Thread(() -> {
+            try {
+                XMLOrderManager.saveOrderToXML(order);
+            } catch (Exception e) {
+                // Log error but don't block checkout
+                System.err.println("Error saving order to XML: " + e.getMessage());
+            }
+        }).start();
         
-        // Send email confirmation
-        EmailService.sendOrderConfirmation(order);
+        // Send email confirmation asynchronously
+        new Thread(() -> {
+            try {
+                EmailService.sendOrderConfirmation(order);
+            } catch (Exception e) {
+                // Log error but don't block checkout
+                System.err.println("Error sending confirmation email: " + e.getMessage());
+            }
+        }).start();
         
         // Clear cart
         session.removeAttribute("cart");

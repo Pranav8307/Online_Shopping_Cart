@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 public class XMLOrderManager {
-    private static final String ORDERS_XML_FILE = "orders.xml";
+    private static final String ORDERS_XML_FILE = System.getProperty("java.io.tmpdir") + File.separator + "orders.xml";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     
     public static void saveOrderToXML(Order order) {
