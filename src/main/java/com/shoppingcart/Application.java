@@ -62,13 +62,30 @@ public class Application {
                 System.out.println("Added classes from: " + classesDir.getAbsolutePath());
             }
             
-            // Configure JSP servlet
-            Tomcat.addServlet(context, "jsp", "org.apache.jasper.servlet.JspServlet");
-            context.addServletMappingDecoded("*.jsp", "jsp");
+            // Enable Tomcat's default servlet configuration
+            context.addParameter("privileged", "true");
+            tomcat.getHost().setAutoDeploy(false);
             
-            // Configure default servlet
-            Tomcat.addServlet(context, "default", "org.apache.catalina.servlets.DefaultServlet");
-            context.addServletMappingDecoded("/", "default");
+            // Configure webapp defaults (this adds default and jsp servlets)
+            tomcat.initWebappDefaults(context);
+            
+            // Log servlet registrations
+            System.out.println("\n=== Servlet Configuration ===");
+            String[] servletMappings = context.findServletMappings();
+            if (servletMappings != null) {
+                for (String mapping : servletMappings) {
+                    System.out.println("Mapping: " + mapping + " -> " + 
+                        context.findServletMapping(mapping));
+                }
+            }
+            
+            System.out.println("\n=== Welcome Files ===");
+            String[] welcomeFiles = context.findWelcomeFiles();
+            if (welcomeFiles != null) {
+                for (String welcome : welcomeFiles) {
+                    System.out.println("Welcome file: " + welcome);
+                }
+            }
             
             // Verify critical files
             System.out.println("\n=== Resource Check ===");
