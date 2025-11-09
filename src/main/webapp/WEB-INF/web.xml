@@ -11,7 +11,19 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
-
+    <!-- Authentication Filter -->
+    <filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>com.shoppingcart.filter.AuthenticationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/cart/*</url-pattern>
+        <url-pattern>/checkout/*</url-pattern>
+        <url-pattern>/profile/*</url-pattern>
+        <url-pattern>/orders/*</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
 
     <!-- Servlets -->
     <servlet>

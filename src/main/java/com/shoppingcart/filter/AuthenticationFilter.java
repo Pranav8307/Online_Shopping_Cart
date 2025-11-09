@@ -7,10 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-// TEMPORARILY DISABLED - Using AuthHelper in servlets instead
-// @WebFilter annotation removed to prevent auto-discovery
-// Filter will be registered manually if needed
-/*
+// Filter will be registered manually in web.xml
 public class AuthenticationFilter implements Filter {
     
     @Override
@@ -47,5 +44,4 @@ public class AuthenticationFilter implements Filter {
     public void destroy() {
     }
 }
-*/
 
