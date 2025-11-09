@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: online-shopping-cart
+    env: java
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -cp "target/classes:target/dependency/*" com.shoppingcart.Application
+    envVars:
+      - key: JAVA_VERSION
+        value: 11
+    plan: free
+    region: oregon
+
