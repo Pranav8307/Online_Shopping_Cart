@@ -32,11 +32,15 @@ public class Application {
             String baseDir = new File("target/tomcat").getAbsolutePath();
             tomcat.setBaseDir(baseDir);
             
-            // Get webapp directory
-            File webappDir = new File("src/main/webapp").getAbsoluteFile();
+            // Get webapp directory - check Docker path first, then dev path
+            File webappDir = new File("/app/webapp").getAbsoluteFile();
             if (!webappDir.exists()) {
-                System.err.println("ERROR: Webapp directory not found: " + webappDir.getAbsolutePath());
-                System.exit(1);
+                // Fallback to dev path
+                webappDir = new File("src/main/webapp").getAbsoluteFile();
+                if (!webappDir.exists()) {
+                    System.err.println("ERROR: Webapp directory not found at either /app/webapp or src/main/webapp");
+                    System.exit(1);
+                }
             }
             
             // Set up the web app with proper configuration

@@ -13,18 +13,16 @@ RUN mvn dependency:go-offline -B
 
 # Copy source code and build
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests && \
+    mv target/online-shopping-cart-1.0.0.jar target/app.jar
 
 # Runtime stage - Use Temurin JRE for smaller runtime image
 FROM eclipse-temurin:11-jre
 WORKDIR /app
 
-## For simplicity produce a fat JAR (built by maven-shade) and run it.
-## Build stage already ran `mvn clean package -DskipTests` which will produce
-## target/*-shaded.jar (maven-shade default) or a jar in target.
-
-# Copy the produced JAR from the build stage
-COPY --from=build /app/target/*.jar /app/app.jar
+# Copy the renamed JAR and webapp directory
+COPY --from=build /app/target/app.jar /app/app.jar
+COPY --from=build /app/src/main/webapp /app/webapp
 
 # Expose port (Render provides PORT env var at runtime)
 EXPOSE 8080
