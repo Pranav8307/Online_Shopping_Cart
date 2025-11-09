@@ -4,11 +4,9 @@ import com.shoppingcart.dao.UserDAO;
 import com.shoppingcart.model.User;
 import com.shoppingcart.util.AuthHelper;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 
-@WebServlet("/profile")
 public class ProfileServlet extends HttpServlet {
     
     @Override

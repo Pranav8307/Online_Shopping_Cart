@@ -7,14 +7,12 @@ import com.shoppingcart.service.EmailService;
 import com.shoppingcart.util.AuthHelper;
 import com.shoppingcart.util.XMLOrderManager;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/checkout")
 public class CheckoutServlet extends HttpServlet {
     
     @Override

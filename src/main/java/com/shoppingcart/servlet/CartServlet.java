@@ -6,14 +6,12 @@ import com.shoppingcart.model.Product;
 import com.shoppingcart.model.User;
 import com.shoppingcart.util.AuthHelper;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/cart/*")
 public class CartServlet extends HttpServlet {
     
     @Override

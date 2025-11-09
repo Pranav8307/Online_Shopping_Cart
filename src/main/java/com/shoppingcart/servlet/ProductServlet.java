@@ -3,13 +3,11 @@ package com.shoppingcart.servlet;
 import com.shoppingcart.dao.ProductDAO;
 import com.shoppingcart.model.Product;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-@WebServlet("/products")
 public class ProductServlet extends HttpServlet {
     
     @Override

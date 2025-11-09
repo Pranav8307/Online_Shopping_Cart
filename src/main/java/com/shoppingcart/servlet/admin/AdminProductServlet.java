@@ -5,12 +5,10 @@ import com.shoppingcart.model.Product;
 import com.shoppingcart.service.EmailService;
 import com.shoppingcart.util.AuthHelper;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-@WebServlet("/admin/products")
 public class AdminProductServlet extends HttpServlet {
     
     @Override

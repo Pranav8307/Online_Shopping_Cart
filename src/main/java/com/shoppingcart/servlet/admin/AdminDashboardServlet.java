@@ -6,13 +6,11 @@ import com.shoppingcart.dao.UserDAO;
 import com.shoppingcart.model.Order;
 import com.shoppingcart.util.AuthHelper;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-@WebServlet("/admin/dashboard")
 public class AdminDashboardServlet extends HttpServlet {
     
     @Override

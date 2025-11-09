@@ -5,12 +5,10 @@ import com.shoppingcart.model.Order;
 import com.shoppingcart.model.User;
 import com.shoppingcart.util.AuthHelper;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/orders")
 public class OrderHistoryServlet extends HttpServlet {
     
     @Override

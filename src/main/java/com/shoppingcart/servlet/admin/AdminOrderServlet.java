@@ -4,7 +4,6 @@ import com.shoppingcart.dao.OrderDAO;
 import com.shoppingcart.model.Order;
 import com.shoppingcart.util.AuthHelper;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.text.ParseException;
@@ -12,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-@WebServlet("/admin/orders")
 public class AdminOrderServlet extends HttpServlet {
     
     @Override
