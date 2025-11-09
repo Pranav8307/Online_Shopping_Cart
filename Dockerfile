@@ -32,8 +32,13 @@ COPY --from=build /app/target/dependency /tmp/dependency
 # Create necessary directories and verify webapp structure
 RUN mkdir -p /app/webapp/WEB-INF && \
     mkdir -p /app/webapp/WEB-INF/lib && \
-    # move dependency jars into WEB-INF/lib
-    cp -r /tmp/dependency/* /app/webapp/WEB-INF/lib/ || true && \
+    # copy dependency jars INTO WEB-INF/lib but EXCLUDE Tomcat/Jasper jars
+    if [ -d /tmp/dependency ]; then \
+        echo "Copying dependency jars (excluding tomcat/jasper)"; \
+        find /tmp/dependency -maxdepth 1 -type f -name '*.jar' \
+            ! -iname '*tomcat*.jar' ! -iname '*jasper*.jar' \
+            -exec cp {} /app/webapp/WEB-INF/lib/ \; || true; \
+    fi && \
     rm -rf /tmp/dependency || true && \
     echo "=== Webapp Contents ===" && \
     ls -la /app/webapp && \
