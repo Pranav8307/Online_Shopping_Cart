@@ -23,9 +23,15 @@ WORKDIR /app
 # Copy the renamed JAR and webapp directory with proper permissions
 COPY --from=build /app/target/app.jar /app/app.jar
 COPY --from=build /app/src/main/webapp /app/webapp
-RUN ls -la /app/webapp && \
-    echo "Checking WEB-INF..." && \
-    ls -la /app/webapp/WEB-INF || echo "WEB-INF not found!"
+
+# Create necessary directories and verify webapp structure
+RUN mkdir -p /app/webapp/WEB-INF && \
+    echo "=== Webapp Contents ===" && \
+    ls -la /app/webapp && \
+    echo "=== WEB-INF Contents ===" && \
+    ls -la /app/webapp/WEB-INF || true && \
+    echo "=== All JSP Files ===" && \
+    find /app/webapp -name "*.jsp" -type f
 
 # Expose port (Render provides PORT env var at runtime)
 EXPOSE 8080

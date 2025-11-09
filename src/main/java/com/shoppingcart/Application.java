@@ -66,16 +66,45 @@ public class Application {
                         classesDir.getAbsolutePath(), "/"));
                 System.out.println("Added classes from: " + classesDir.getAbsolutePath());
             }
+
+            // Enable JSP support
+            tomcat.getHost().addChild(context);
             
+            // Add JSP Servlet
+            Wrapper wrapper = context.createWrapper();
+            wrapper.setName("jsp");
+            wrapper.setServletClass("org.apache.jasper.servlet.JspServlet");
+            wrapper.addInitParameter("fork", "false");
+            wrapper.addInitParameter("xpoweredBy", "false");
+            wrapper.setLoadOnStartup(3);
+            context.addChild(wrapper);
+            context.addServletMappingDecoded("*.jsp", "jsp");
+            
+            // Add Default Servlet for static files
+            wrapper = context.createWrapper();
+            wrapper.setName("default");
+            wrapper.setServletClass("org.apache.catalina.servlets.DefaultServlet");
+            wrapper.setLoadOnStartup(1);
+            context.addChild(wrapper);
+            context.addServletMappingDecoded("/", "default");
+            
+            System.out.println("\n=== Context Configuration ===");
             System.out.println("Context path: " + context.getPath());
             System.out.println("Document base: " + context.getDocBase());
+            System.out.println("Webapp real path: " + context.getRealPath("/"));
             
-            // Verify critical JSP files exist
-            File registerJsp = new File(webappDir, "register.jsp");
-            if (!registerJsp.exists()) {
-                System.err.println("WARNING: register.jsp not found at: " + registerJsp.getAbsolutePath());
-            } else {
-                System.out.println("Found register.jsp at: " + registerJsp.getAbsolutePath());
+            // Verify critical JSP files
+            String[] criticalFiles = {
+                "register.jsp",
+                "login.jsp",
+                "index.jsp",
+                "WEB-INF/web.xml"
+            };
+            
+            System.out.println("\n=== Critical Files Check ===");
+            for (String file : criticalFiles) {
+                File f = new File(webappDir, file);
+                System.out.println(file + " exists: " + f.exists() + " at " + f.getAbsolutePath());
             }
             
             // Configure session timeout programmatically (since web.xml session-config causes issues)
